@@ -2,9 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { cacheReport, cacheUsage, canonicalize, stabilizeAssembly } from '../lib/stabilizer.mjs'
 
-function assembly(cwd, persona = 'You are a coding agent. Your working directory is {{cwd}}.') {
+function assembly(cwd, persona = 'You are a coding agent. Your working directory is {{cwd}}.', section = 'deployment:persona') {
   return {
-    sections: [{ name: 'deployment:persona', text: persona }],
+    sections: [{ name: section, text: persona }],
     contexts: [],
     tools: [{ name: 'write', parameters: { required: ['path'], properties: { z: { type: 'string' }, a: { type: 'string' } }, type: 'object' } }],
     variables: { cwd, model: 'deepseek' },
@@ -18,6 +18,39 @@ test('moves the known cwd sentence out of the reusable system prefix', () => {
   assert.equal(first.contexts[0].text, 'Working directory: {{cwd}}')
   assert.equal(first.variables.cwd, 'C:/one')
   assert.equal(second.variables.cwd, 'D:/two')
+})
+
+test('relocates the cwd sentence from the split 0.2.x persona slots', () => {
+  const build = (cwd) => ({
+    sections: [
+      { name: 'deployment:persona-prefix', text: 'You are a coding agent powered by the {{model}} model.' },
+      { name: 'deployment:persona-suffix', text: 'Your working directory is {{cwd}}.' },
+    ],
+    contexts: [],
+    tools: [],
+    variables: { cwd, model: 'deepseek' },
+  })
+  const first = stabilizeAssembly(build('C:/one'))
+  const second = stabilizeAssembly(build('D:/two'))
+  assert.deepEqual(first.sections, second.sections)
+  assert.equal(first.sections[0].text, 'You are a coding agent powered by the {{model}} model.')
+  assert.equal(first.sections[1].text, 'Your working directory is provided in the runtime context.')
+  assert.equal(first.contexts[0].text, 'Working directory: {{cwd}}')
+  assert.equal(first.variables.cwd, 'C:/one')
+  assert.equal(second.variables.cwd, 'D:/two')
+})
+
+test('relocates from the persona prefix slot when a deployment puts the sentence there', () => {
+  const result = stabilizeAssembly(assembly('C:/one', 'Your working directory is {{cwd}}.', 'deployment:persona-prefix'))
+  assert.equal(result.sections[0].text, 'Your working directory is provided in the runtime context.')
+  assert.equal(result.contexts[0].text, 'Working directory: {{cwd}}')
+})
+
+test('leaves the known sentence alone outside a persona slot', () => {
+  const original = assembly('C:/one', 'Your working directory is {{cwd}}.', 'agent:custom')
+  const result = stabilizeAssembly(original)
+  assert.deepEqual(result.sections, original.sections)
+  assert.deepEqual(result.contexts, [])
 })
 
 test('does not guess how to rewrite a custom persona', () => {

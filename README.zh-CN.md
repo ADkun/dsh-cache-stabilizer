@@ -22,9 +22,15 @@ dsh plugin --profile web add dsh-cache-stabilizer
 
 重启 DSH，完成几轮对话后输入 `/cache`。
 
+如果包没有发布到你的 registry，可以直接从 git 安装本 fork：
+
+```sh
+dsh plugin --profile web add github:ADkun/dsh-cache-stabilizer
+```
+
 ## 安全边界
 
-插件只改写 DSH 标准 coding persona 的那一句固定模板。自定义 persona 里其他形式的 `{{cwd}}` 不会被猜测式搬运。插件不会冻结工具清单、复用陈旧状态、代理模型响应，也不会另外造一层结果缓存。
+插件只改写 DSH 标准 coding persona 的那一句固定模板。自定义 persona 里其他形式的 `{{cwd}}` 不会被猜测式搬运。插件同时识别两种 persona 布局：DSH 0.1.x 的单一 `deployment:persona` 段，以及 0.2.x 起拆分的 `deployment:persona-prefix` / `deployment:persona-suffix`。只有这几个槽位会被考虑，且必须逐字包含那句模板。插件不会冻结工具清单、复用陈旧状态、代理模型响应，也不会另外造一层结果缓存。
 
 ## 开发
 

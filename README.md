@@ -22,6 +22,12 @@ dsh plugin --profile web add dsh-cache-stabilizer
 
 Restart DSH, send a few messages, then enter `/cache` in a command-capable client.
 
+If the package is not published on your registry, install this fork from git instead:
+
+```sh
+dsh plugin --profile web add github:ADkun/dsh-cache-stabilizer
+```
+
 For a custom profile, replace `web` with its profile name. To disable either optimization in a profile patch:
 
 ```yaml
@@ -33,7 +39,7 @@ For a custom profile, replace `web` with its profile name. To disable either opt
 
 ## Safety boundary
 
-Only the exact sentence used by DSH's standard/headless coding persona is relocated. A custom persona that mentions `{{cwd}}` in another form is left unchanged because blindly moving arbitrary prose can change meaning. The plugin does not freeze tool catalogs, reuse stale context, proxy model responses, or implement a second cache.
+Only the exact sentence used by DSH's standard/headless coding persona is relocated. A custom persona that mentions `{{cwd}}` in another form is left unchanged because blindly moving arbitrary prose can change meaning. Both persona layouts are recognized: the single `deployment:persona` section of DSH 0.1.x and the `deployment:persona-prefix` / `deployment:persona-suffix` split introduced in 0.2.x. Only those slots are considered, and only when they contain the sentence verbatim. The plugin does not freeze tool catalogs, reuse stale context, proxy model responses, or implement a second cache.
 
 DeepSeek's provider cache is automatic and depends on an exact prefix match from token zero. Storage and eviction remain provider-controlled.
 
