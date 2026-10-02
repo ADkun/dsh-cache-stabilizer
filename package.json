@@ -1,6 +1,6 @@
 {
   "name": "dsh-cache-stabilizer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Cache-prefix stabilization and evidence-based cache metrics for DeepSeek Harness",
   "license": "MIT",
   "type": "module",
